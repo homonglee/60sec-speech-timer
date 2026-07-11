@@ -138,7 +138,10 @@
   const sample = '지역 네트워킹, AI 자동화, 반복 업무 절감, 신규 고객 발굴, 신뢰 기반 소개';
 
   function words(text){ return (text.trim().match(/\S+/g)||[]).length; }
-  function plainScript(){ return els.script.innerText.replace(/\s+\n/g,'\n').trim(); }
+  function plainScript(){
+    if (els.script.querySelector('.placeholder')) return '';
+    return els.script.innerText.replace(/\s+\n/g,'\n').trim();
+  }
   function splitSegments(text){
     return text.split(/(?<=[.!?。]|다\.|요\.|니다\.)\s+/).map(s=>s.trim()).filter(Boolean);
   }
