@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>60초 스피치 타이머 & 피치 제너레이터</title>
+  <style>
+    :root{
+      --bg:#f7f9fc; --card:#ffffff; --ink:#172033; --muted:#667085; --line:#e4eaf3;
+      --primary:#2563eb; --primary-2:#1d4ed8; --accent:#10b981; --warn:#f59e0b; --danger:#ef4444;
+      --soft:#eef5ff; --soft-green:#ecfdf5; --shadow:0 18px 45px rgba(31,54,91,.10);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;background:radial-gradient(circle at top left,#eaf3ff 0,#f7f9fc 34%,#fff 100%);color:var(--ink)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer;border:0}
+    .wrap{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:34px 0 46px}
+    .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:stretch;margin-bottom:22px}
+    .hero-card,.panel{background:rgba(255,255,255,.86);border:1px solid rgba(226,232,240,.9);box-shadow:var(--shadow);border-radius:var(--radius);backdrop-filter:blur(12px)}
+    .hero-card{padding:34px;position:relative;overflow:hidden}
+    .hero-card:after{content:"";position:absolute;right:-80px;top:-90px;width:250px;height:250px;border-radius:999px;background:linear-gradient(135deg,#bfdbfe,#d1fae5);opacity:.7}
+    .eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 12px;border-radius:999px;background:var(--soft);color:#1d4ed8;font-weight:800;font-size:13px;margin-bottom:16px}
+    h1{font-size:clamp(32px,5vw,54px);line-height:1.05;margin:0 0 14px;letter-spacing:-.045em;position:relative;z-index:1}
+    .lead{font-size:18px;line-height:1.68;color:var(--muted);max-width:650px;margin:0;position:relative;z-index:1}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px;position:relative;z-index:1}
+    .btn{border-radius:16px;padding:13px 17px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.18s transform,.18s background,.18s box-shadow;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:var(--primary);color:white;box-shadow:0 12px 24px rgba(37,99,235,.22)}
+    .btn.primary:hover{background:var(--primary-2)}
+    .btn.ghost{background:#fff;color:#1f2937;border:1px solid var(--line)}
+    .btn.green{background:#059669;color:#fff}.btn.warn{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}.btn.danger{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}
+    .mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:18px}
+    .metric{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;min-height:116px}
+    .metric b{display:block;font-size:30px;letter-spacing:-.04em}.metric span{display:block;margin-top:7px;color:var(--muted);font-size:14px;line-height:1.4}
+    .layout{display:grid;grid-template-columns:390px 1fr;gap:22px;align-items:start}.panel{padding:22px}.panel h2{margin:0 0 14px;font-size:22px;letter-spacing:-.03em}.field{margin-bottom:15px}.field label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;color:#344054;font-weight:800;font-size:14px}.hint{color:#98a2b3;font-weight:600}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 13px;outline:none;color:var(--ink);transition:.15s border,.15s box-shadow}.field textarea{resize:vertical;min-height:88px}.field input:focus,.field select:focus,.field textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.chip{background:#f1f5f9;border:1px solid #e2e8f0;color:#475569;border-radius:999px;padding:7px 10px;font-weight:750;font-size:13px}.range-row{display:flex;align-items:center;gap:10px}.range-row input{padding:0}.range-row output{min-width:76px;text-align:right;font-weight:900;color:#1d4ed8}
+    .script-card{display:grid;grid-template-columns:1fr;gap:16px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}.status{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-weight:800;color:#475467;font-size:13px}.pill.good{background:var(--soft-green);border-color:#bbf7d0;color:#047857}.pill.blue{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.pill.orange{background:#fff7ed;border-color:#fed7aa;color:#b45309}
+    .script{background:#fbfdff;border:1px solid var(--line);border-radius:22px;padding:22px;min-height:360px;line-height:1.88;font-size:20px;letter-spacing:-.012em;white-space:pre-wrap}.script .seg{padding:2px 4px;border-radius:8px;transition:.18s background,.18s color}.script .seg.active{background:#dbeafe;color:#1e40af;box-shadow:0 0 0 1px #bfdbfe inset}.script .seg.done{color:#94a3b8}.placeholder{color:#98a2b3;display:grid;place-items:center;text-align:center;height:310px;line-height:1.55}.timer-box{background:linear-gradient(135deg,#ffffff,#f0f7ff);border:1px solid #dbeafe;border-radius:24px;padding:20px;display:grid;grid-template-columns:170px 1fr;gap:20px;align-items:center;position:sticky;top:12px;z-index:4;box-shadow:0 16px 35px rgba(37,99,235,.12)}.ring{width:156px;height:156px;border-radius:50%;background:conic-gradient(var(--primary) var(--angle,0deg),#e2e8f0 0);display:grid;place-items:center;position:relative}.ring:before{content:"";position:absolute;inset:11px;background:#fff;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line)}.time{position:relative;text-align:center}.time b{display:block;font-size:39px;letter-spacing:-.05em}.time span{font-size:13px;color:var(--muted);font-weight:800}.timer-controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.progress{height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:999px;transition:.2s width}.coach{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.coach div{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.coach b{display:block;font-size:18px}.coach span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.tip{border:1px solid var(--line);background:#fff;border-radius:18px;padding:14px}.tip strong{display:block;margin-bottom:5px}.tip p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:12px 15px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.18);opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none;z-index:5}.toast.show{opacity:1;transform:translateY(0)}
+    @media(max-width:900px){.hero,.layout{grid-template-columns:1fr}.timer-box{grid-template-columns:112px 1fr;gap:12px;padding:12px;top:8px;max-height:30vh;overflow:hidden}.ring{width:104px;height:104px;margin:0}.ring:before{inset:8px}.time b{font-size:27px}.time span{font-size:11px}.timer-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:8px}.timer-controls .btn{padding:9px 8px;font-size:13px;width:auto}.progress{height:9px;margin:6px 0}.coach{grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.coach div{padding:7px 5px;border-radius:12px}.coach b{font-size:14px}.coach span{font-size:10px}.cards{grid-template-columns:1fr}.mini-grid{grid-template-columns:1fr 1fr}.script{font-size:18px}.wrap{width:min(100% - 22px,1180px)}}
+    @media(max-width:520px){.two,.mini-grid{grid-template-columns:1fr}.hero-card,.panel{padding:18px}.btn{width:100%}.toolbar{align-items:stretch}.timer-box{grid-template-columns:88px 1fr;gap:9px;padding:9px;border-radius:18px;max-height:30vh}.timer-controls{grid-template-columns:1fr 1fr;gap:6px}.timer-controls .btn{width:auto;padding:8px 6px;font-size:12px;border-radius:11px}.script{padding:16px;font-size:17px;line-height:1.82}.ring{width:82px;height:82px}.ring:before{inset:6px}.time b{font-size:23px}.time span{font-size:10px}.coach{gap:5px}.coach div{padding:6px 3px}.coach b{font-size:13px}.coach span{font-size:9px}.progress{height:8px;margin:5px 0}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">⏱️ 60초 안에 핵심만 말하기</div>
+        <h1>키워드 몇 개로 완성하는 조찬·미팅용 1분 피치</h1>
+        <p class="lead">상황, 청중, 키워드를 입력하면 도입–문제–가치–요청 구조의 60초 스크립트를 만들고, 발표 속도에 맞춰 문장이 하이라이트되는 연습 타이머까지 한 화면에서 실행합니다.</p>
+        <div class="hero-actions">
+          <button class="btn primary" id="quickGenerate">샘플로 바로 생성</button>
+          <button class="btn ghost" id="focusInput">내 키워드 입력하기</button>
+        </div>
+      </div>
+      <div class="panel mini-grid" aria-label="앱 핵심 기능">
+        <div class="metric"><b>60s</b><span>발표 시간이 자동으로 60초에 맞춰집니다.</span></div>
+        <div class="metric"><b>5단</b><span>인사, 공감, 제안, 근거, 요청 구조를 사용합니다.</span></div>
+        <div class="metric"><b>WPM</b><span>느림·보통·빠름 발표 속도별 권장 분량을 계산합니다.</span></div>
+        <div class="metric"><b>Live</b><span>타이머 진행에 따라 다음 말할 문장을 표시합니다.</span></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <h2>피치 입력</h2>
+        <div class="field">
+          <label for="keywords">핵심 키워드 <span class="hint">쉼표로 구분</span></label>
+          <textarea id="keywords" placeholder="예: 지역 네트워킹, AI 자동화, 신규 고객 발굴"></textarea>
+          <div class="chips" id="keywordChips"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="occasion">상황</label><select id="occasion"><option>조찬 모임</option><option>팀 미팅</option><option>영업 미팅</option><option>네트워킹 행사</option><option>투자자 미팅</option></select></div>
+          <div class="field"><label for="tone">톤</label><select id="tone"><option>따뜻하고 전문적</option><option>간결하고 자신감 있게</option><option>친근하고 활기차게</option><option>설득력 있고 차분하게</option></select></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="audience">청중</label><input id="audience" value="처음 만나는 비즈니스 리더들" /></div>
+          <div class="field"><label for="ask">마무리 요청</label><input id="ask" value="짧은 후속 미팅 제안" /></div>
+        </div>
+        <div class="field">
+          <label for="goal">한 문장 목표</label>
+          <input id="goal" value="내가 어떤 문제를 해결하는 사람인지 기억하게 만들기" />
+        </div>
+        <div class="field">
+          <label for="pace">발표 속도 <span class="hint">한국어 기준 추정</span></label>
+          <div class="range-row"><input type="range" id="pace" min="110" max="170" step="5" value="135"><output id="paceOut">135 WPM</output></div>
+        </div>
+        <button class="btn primary" id="generate" style="width:100%">✨ 60초 스크립트 생성</button>
+        <div class="cards">
+          <div class="tip"><strong>구성</strong><p>첫 10초는 정체성, 중간 35초는 문제와 가치, 마지막 15초는 기억점과 요청.</p></div>
+          <div class="tip"><strong>연습</strong><p>하이라이트가 앞서가면 속도를 높이고, 남으면 잠깐 쉬어도 됩니다.</p></div>
+          <div class="tip"><strong>수정</strong><p>생성 후 텍스트를 직접 고치면 타이머 분량도 즉시 다시 계산됩니다.</p></div>
+        </div>
+      </aside>
+
+      <section class="panel script-card">
+        <div class="toolbar">
+          <h2>생성된 60초 피치</h2>
+          <div class="status">
+            <span class="pill blue" id="wordCount">0 어절</span>
+            <span class="pill good" id="fitStatus">대기 중</span>
+            <span class="pill orange" id="sectionStatus">5개 구간</span>
+          </div>
+        </div>
+        <div class="timer-box">
+          <div class="ring" id="ring" style="--angle:0deg"><div class="time"><b id="timeLeft">60</b><span>초 남음</span></div></div>
+          <div>
+            <div class="progress"><div class="bar" id="bar"></div></div>
+            <div class="timer-controls">
+              <button class="btn green" id="start">▶ 연습 시작</button>
+              <button class="btn warn" id="pause">⏸ 일시정지</button>
+              <button class="btn ghost" id="reset">↺ 리셋</button>
+              <button class="btn ghost" id="copy">📋 복사</button>
+            </div>
+            <div class="coach">
+              <div><b id="elapsed">0초</b><span>진행 시간</span></div>
+              <div><b id="currentCue">대기</b><span>현재 구간</span></div>
+              <div><b id="paceHint">보통</b><span>속도 코칭</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="script" id="script" contenteditable="true" aria-label="생성된 발표 스크립트"><div class="placeholder">왼쪽에 키워드를 넣고 생성 버튼을 누르면<br>60초 발표 스크립트와 연습 타이머가 나타납니다.</div></div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const els = {
+    keywords: $('#keywords'), chips: $('#keywordChips'), occasion: $('#occasion'), tone: $('#tone'), audience: $('#audience'), ask: $('#ask'), goal: $('#goal'), pace: $('#pace'), paceOut: $('#paceOut'),
+    generate: $('#generate'), quick: $('#quickGenerate'), focus: $('#focusInput'), script: $('#script'), wordCount: $('#wordCount'), fit: $('#fitStatus'), section: $('#sectionStatus'),
+    start: $('#start'), pause: $('#pause'), reset: $('#reset'), copy: $('#copy'), ring: $('#ring'), bar: $('#bar'), timeLeft: $('#timeLeft'), elapsed: $('#elapsed'), cue: $('#currentCue'), paceHint: $('#paceHint'), toast: $('#toast')
+  };
+  let timer = null, startedAt = 0, pausedAt = 0, elapsedMs = 0, segments = [];
+  const totalMs = 60000;
+  const sample = '지역 네트워킹, AI 자동화, 반복 업무 절감, 신규 고객 발굴, 신뢰 기반 소개';
+
+  function words(text){ return (text.trim().match(/\S+/g)||[]).length; }
+  function plainScript(){ return els.script.innerText.replace(/\s+\n/g,'\n').trim(); }
+  function splitSegments(text){
+    return text.split(/(?<=[.!?。]|다\.|요\.|니다\.)\s+/).map(s=>s.trim()).filter(Boolean);
+  }
+  function updateChips(){
+    const ks = els.keywords.value.split(',').map(k=>k.trim()).filter(Boolean).slice(0,8);
+    els.chips.innerHTML = ks.map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('');
+  }
+  function escapeHtml(s){return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function makeScript(){
+    const ks = els.keywords.value.split(',').map(k=>k.trim()).filter(Boolean);
+    const [k1='핵심 문제', k2='차별화된 해결책', k3='실행 경험', k4='함께 만들 기회'] = ks;
+    const occasion = els.occasion.value, tone = els.tone.value, audience = els.audience.value || '청중', ask = els.ask.value || '후속 대화', goal = els.goal.value || '기억에 남는 소개';
+    const opener = occasion.includes('조찬') ? '좋은 아침입니다.' : '안녕하세요.';
+    const toneLine = tone.includes('활기') ? '짧고 활기 있게 말씀드리겠습니다.' : tone.includes('차분') ? '핵심만 차분히 말씀드리겠습니다.' : '짧고 분명하게 말씀드리겠습니다.';
+    return `${opener} 저는 ${goal}를 목표로 움직이는 사람입니다. ${toneLine}\n\n요즘 ${audience}께서 가장 자주 겪는 어려움은 ${k1}을 알면서도, 바쁜 일정 때문에 꾸준히 실행하기 어렵다는 점이라고 생각합니다. 저는 여기에 ${k2}를 결합해 반복되는 판단과 준비 시간을 줄이고, 중요한 관계와 의사결정에 더 많은 에너지를 쓰도록 돕고 있습니다.\n\n특히 ${k3}을 통해 확인한 것은, 작은 자동화와 명확한 메시지만 있어도 만남의 질이 달라지고 ${k4}로 이어질 가능성이 커진다는 점입니다. 그래서 제 피치의 핵심은 단순합니다. 시간을 아끼고, 관계를 선명하게 만들고, 다음 기회를 더 빨리 발견하게 하자는 것입니다.\n\n오늘 이 자리에서 ${ask}을 드리고 싶습니다. 관심 있는 분은 발표 후 10분만 이야기 나누시면, 바로 적용할 수 있는 첫 번째 아이디어를 함께 찾아보겠습니다. 감사합니다.`;
+  }
+  function renderScript(text){
+    segments = splitSegments(text);
+    els.script.innerHTML = segments.map((s,i)=>`<span class="seg" data-i="${i}">${escapeHtml(s)}</span>`).join(' ');
+    refreshStats(); resetTimer();
+  }
+  function refreshStats(){
+    const count = words(plainScript()); const target = Number(els.pace.value); const est = Math.round(count / target * 60);
+    els.wordCount.textContent = `${count} 어절 · 약 ${est}초`;
+    const delta = est - 60;
+    if(!count){ els.fit.textContent = '대기 중'; els.fit.className='pill good'; }
+    else if(Math.abs(delta)<=6){ els.fit.textContent = '60초 적합'; els.fit.className='pill good'; }
+    else if(delta>0){ els.fit.textContent = `${delta}초 길어요`; els.fit.className='pill orange'; }
+    else { els.fit.textContent = `${Math.abs(delta)}초 여유`; els.fit.className='pill blue'; }
+    els.section.textContent = `${splitSegments(plainScript()).length || 0}개 구간`;
+    els.paceHint.textContent = target < 125 ? '느리게' : target > 150 ? '빠르게' : '보통';
+  }
+  function tick(){
+    const now = performance.now(); elapsedMs = Math.min(totalMs, now - startedAt + pausedAt); updateTimerUI();
+    if(elapsedMs >= totalMs){ pauseTimer(); els.cue.textContent='완료'; toast('60초 연습 완료!'); }
+  }
+  function updateTimerUI(){
+    const progress = elapsedMs / totalMs; const remain = Math.max(0, Math.ceil((totalMs - elapsedMs)/1000));
+    els.timeLeft.textContent = remain; els.elapsed.textContent = `${Math.floor(elapsedMs/1000)}초`; els.bar.style.width = `${progress*100}%`; els.ring.style.setProperty('--angle', `${progress*360}deg`);
+    const segs = [...els.script.querySelectorAll('.seg')]; const idx = Math.min(segs.length-1, Math.floor(progress * segs.length));
+    segs.forEach((s,i)=>{ s.classList.toggle('active', i===idx && progress<1); s.classList.toggle('done', i<idx || progress>=1); });
+    if(segs[idx]) els.cue.textContent = `${idx+1}/${segs.length}`;
+  }
+  function startTimer(){ if(!plainScript()){ toast('먼저 스크립트를 생성해 주세요'); return; } if(timer) return; startedAt = performance.now(); timer = setInterval(tick, 120); tick(); }
+  function pauseTimer(){ if(timer){ clearInterval(timer); timer = null; pausedAt = elapsedMs; } }
+  function resetTimer(){ pauseTimer(); elapsedMs=0; pausedAt=0; els.timeLeft.textContent='60'; els.elapsed.textContent='0초'; els.cue.textContent='대기'; els.bar.style.width='0%'; els.ring.style.setProperty('--angle','0deg'); [...els.script.querySelectorAll('.seg')].forEach(s=>s.classList.remove('active','done')); }
+  async function copyText(){ const text = plainScript(); if(!text){ toast('복사할 스크립트가 없습니다'); return; } try{ await navigator.clipboard.writeText(text); } catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); } toast('스크립트를 복사했습니다'); }
+  function toast(msg){ els.toast.textContent = msg; els.toast.classList.add('show'); clearTimeout(els.toast._t); els.toast._t=setTimeout(()=>els.toast.classList.remove('show'),1800); }
+
+  els.keywords.addEventListener('input', updateChips);
+  els.pace.addEventListener('input', () => { els.paceOut.textContent = `${els.pace.value} WPM`; refreshStats(); });
+  els.generate.addEventListener('click', () => renderScript(makeScript()));
+  els.quick.addEventListener('click', () => { els.keywords.value = sample; els.audience.value='조찬 모임에서 만난 창업자와 지역 리더들'; els.ask.value='다음 주 15분 소개 미팅 제안'; updateChips(); renderScript(makeScript()); document.querySelector('.script-card').scrollIntoView({behavior:'smooth'}); });
+  els.focus.addEventListener('click', () => { els.keywords.focus(); });
+  els.start.addEventListener('click', startTimer); els.pause.addEventListener('click', pauseTimer); els.reset.addEventListener('click', resetTimer); els.copy.addEventListener('click', copyText);
+  els.script.addEventListener('input', () => { segments = splitSegments(plainScript()); refreshStats(); resetTimer(); });
+  updateChips(); refreshStats();
+})();
+</script>
+</body>
+</html>
